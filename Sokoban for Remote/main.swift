@@ -15,7 +15,8 @@ enum Direction {
 struct Point {
     
     var x, y : Int
-    func equal(_ point: Point) -> Bool {
+    
+    func equalTo(_ point: Point) -> Bool {
         self.x == point.x && self.y == point.y
     }
     mutating func movePoint (_ direction: Direction) {
@@ -48,7 +49,7 @@ class Unit {
     
     static func find(units:[Unit], _ pos: Point) -> Unit? {
         for unit in units {
-            if unit.locate.equal(pos) { return unit }
+            if unit.locate.equalTo(pos) { return unit }
         }
         return nil
     }
@@ -61,12 +62,24 @@ class Unit {
 
 class Room {
     
-    let (width, height) : (Int, Int)
-    var hero: Unit
-    var hole: Unit
-    var units: [Unit]
+    let width: Int
+    let height: Int
     
-    static func createRoom( widht: Int = 10, height: Int = 8, level: Int = 8) -> Room {
+    var units: [Unit] {
+        get {
+        Room.createRoomUnit()
+        }
+        set {}
+    }
+    var hero: Unit {
+        units.filter{$0.type == .Hero}[0]
+    }
+    var hole: Unit {
+        units.filter{$0.type == .Hole}[0]
+    }
+    
+   static func createRoomUnit( widht: Int = 10, height: Int = 8, level: Int = 8) -> [Unit] {
+    
         var units = [Unit]()
         
         let hero = Unit(type: .Hero)
@@ -108,13 +121,9 @@ class Room {
             hole.locate = pos
             units.append(hole)
         }
-//        let hole2 = Unit(type: .Hole)
-//        if let pos = Point.random(units: units, width: widht, height: height) {
-//            hole2.locate = pos
-//            units.append(hole2)
-//        }
-        
-        return Room(width: widht, height: height, units: units, hero: hero, hole: hole)
+
+    
+        return units
     }
     
     func render() -> String {
@@ -145,8 +154,6 @@ class Room {
         repeat {
             if let unit = Unit.find(units: units, heroPos) {
                 if unit.type == .Border {
-                    
-                  
                     moveUnits.removeAll()
                     break
                 }
@@ -163,18 +170,19 @@ class Room {
         
         for unit in moveUnits {
             unit.locate.movePoint(direction)
-            if unit.type == .Mushroom && unit.locate.equal(hole.locate) {
+            if unit.type == .Mushroom && unit.locate.equalTo(hole.locate) {
                 let index = unitIndex(unit)
                 units.remove(at: index!)
             }
         }
     }
-    init(width: Int, height: Int, units: [Unit], hero: Unit, hole: Unit) {
+    init(width: Int, height: Int) {
         self.width = width
         self.height = height
-        self.units = units
-        self.hero = hero
-        self.hole = hole
+       
+    }
+  convenience init() {
+    self.init(width: 10, height: 8)
     }
 
 //var room = Room.createRoom()
@@ -221,7 +229,7 @@ func start() {
   }
 }
 
-var room = Room.createRoom()
+var room = Room()
 //room.moveHeroTo(.Down)
 room.showLabel("LEVEL 1")
 sleep(3)
@@ -234,6 +242,8 @@ room.start()
 //
 //sleep(1)
 //room.showLabel("YOU WIN!")
+
+
 
 
 
